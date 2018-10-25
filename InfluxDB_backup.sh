@@ -4,11 +4,13 @@
 #For recovery database first untar last archive and
 #restore all databases found within the backup directory:
 #influxd restore -portable path-to-backup
+#
 #SETUP MAIL only if your system is capable to sending mails.
 MAIL='mail@gmail.com'
 BDIR=/home/pi/InfluxDB_backup                 #Temporary backup directory
 MDIR=/home/pi/backup_drive                    #Mounting point directory
 BFILE=InfluxDB_backup_$(date +%Y%m%d_%H%M%S)  #Name your backup file with date
+DAYS=10                                       #How many days backup files should be keept
 
 echo -e "Starting InfluxDB backup process!"
 echo -e "Unmounting NAS drive" 
@@ -25,7 +27,7 @@ fi
 # Begin the backup process
 echo -e "Backing up InfluxDB to $BDIR."
 echo -e "This will take some time depending on your disc performance. Please wait..."
-influxd backup -portable $BDIR > /dev/null 2>&1
+influxd backup -portable $BDIR > /dev/null
 # Wait for backup process to finish and catch result
 RESULT=$?
 # If command has completed successfully, delete previous backups and exit
@@ -33,6 +35,7 @@ if [ $RESULT = 0 ];
     then
         echo -e "Delete old local backup file"
         sudo rm -f ~/InfluxDB_backup_*.tar.gz
+        ls $MDIR -tp |grep -v / | sed -e '1,${DAYS}d' | xargs -d '\n' rm
         echo -n "\e[OK]"
         echo -e "Backup is being tarred. Please wait..."
         tar zcfP ~/$BFILE.tar.gz $BDIR
