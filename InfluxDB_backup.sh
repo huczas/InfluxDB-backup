@@ -35,7 +35,7 @@ if [ $RESULT = 0 ];
     then
         echo -e "Delete old local backup file"
         sudo rm -f ~/InfluxDB_backup_*.tar.gz
-        ls $MDIR -tp |grep -v / | sed -e '1,${DAYS}d' | xargs -d '\n' rm
+        sudo find ${MDIR} -maxdepth 1 -type f  -ctime ${DAYS} -not -name '._*' -print -delete
         echo -n "\e[OK]"
         echo -e "Backup is being tarred. Please wait..."
         tar zcfP ~/$BFILE.tar.gz $BDIR
